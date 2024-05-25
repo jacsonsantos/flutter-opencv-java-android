@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+// Esse cara conversa com o backend Java Android nativo
+import 'package:flutter/services.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -61,6 +63,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  final MethodChannel _channel = MethodChannel('opencvCUSTOM');
+
   void _incrementCounter() async {
       
     // Check permissions and request its
@@ -104,6 +108,20 @@ class _MyHomePageState extends State<MyHomePage> {
         );
     } catch (e) {
         print(e);
+    }
+  }
+
+  Future<String> canny({required Uint8List image, required Uint8List edges}) async {
+    try {
+      // Chame o método nativo através do MethodChannel
+      final String result = await _channel.invokeMethod(
+        'canny', 
+        {'image': image, 'edges': edges, 'threshold1': 50, 'threshold2': 150, 'apertureSize': 3, 'L2gradient': false}
+      );
+      return result;
+    } on PlatformException catch (e) {
+      // Trate possíveis erros durante a chamada
+      return 'Erro: ${e.message}';
     }
   }
 
